@@ -1,4 +1,10 @@
-import type { Dish } from '../data/dishes'
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react'
+import { X } from 'lucide-react'
+import type { Dish } from '@/data/dishes'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
 
 type Props = {
   selected: Dish[]
@@ -8,58 +14,92 @@ type Props = {
 
 export function SelectedSummary({ selected, onClear, onRemove }: Props) {
   const count = selected.length
+  const reduceMotion = useReducedMotion()
 
   return (
     <aside
       id="selected-summary"
-      className="border-t border-[var(--line)] bg-[var(--surface)]/90 backdrop-blur-sm"
+      className="sticky bottom-0 z-20 border-t border-[var(--line)] bg-[var(--surface)]/92 backdrop-blur-md"
       aria-live="polite"
     >
-      <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-6">
+      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="font-display text-xl text-[var(--ink)] sm:text-2xl">
-              已选 {count} 道
+              今晚已选 {count} 道
             </p>
             <p className="mt-1 text-sm text-[var(--ink-muted)]">
               {count === 0
-                ? '点选菜品，两人各自勾想吃的；选择保存在本浏览器。'
-                : '今晚就做这些——可再点取消，或一键清空。'}
+                ? '点菜品图勾选想吃的；选择只保存在本浏览器。'
+                : '再点一次可取消，或清空后重选。'}
             </p>
           </div>
-          {count > 0 && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="text-sm text-[var(--ink-muted)] underline-offset-4 transition hover:text-[var(--accent)] hover:underline"
-            >
-              清空全部
-            </button>
-          )}
+          <AnimatePresence>
+            {count > 0 && (
+              <motion.div
+                initial={reduceMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={reduceMotion ? undefined : { opacity: 0 }}
+              >
+                <Button type="button" variant="link" size="sm" onClick={onClear}>
+                  清空全部
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {count > 0 && (
-          <ul className="mt-4 flex flex-wrap gap-2">
-            {selected.map((dish) => (
-              <li key={dish.id}>
-                <button
-                  type="button"
-                  onClick={() => onRemove(dish.id)}
-                  className="group inline-flex items-center gap-1.5 bg-[var(--surface-muted)] px-3 py-1.5 text-sm text-[var(--ink)] transition hover:bg-[var(--accent-soft)]"
-                  title={`取消选择「${dish.name}」`}
-                >
-                  <span>{dish.name}</span>
-                  <span
-                    className="text-[var(--ink-muted)] transition group-hover:text-[var(--accent)]"
-                    aria-hidden
-                  >
-                    ×
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <AnimatePresence initial={false}>
+          {count > 0 && (
+            <motion.div
+              key="tray"
+              initial={reduceMotion ? false : { height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <Separator className="my-3" />
+              <ScrollArea className="w-full whitespace-nowrap">
+                <LayoutGroup>
+                  <ul className="flex w-max gap-2 pb-1">
+                    <AnimatePresence mode="popLayout">
+                      {selected.map((dish) => (
+                        <motion.li
+                          key={dish.id}
+                          layout={!reduceMotion}
+                          initial={reduceMotion ? false : { opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={
+                            reduceMotion
+                              ? undefined
+                              : { opacity: 0, scale: 0.9 }
+                          }
+                          transition={{ duration: 0.2 }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => onRemove(dish.id)}
+                            title={`取消选择「${dish.name}」`}
+                            className="outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                          >
+                            <Badge
+                              variant="accent"
+                              className="cursor-pointer pr-1.5 hover:bg-[var(--accent)] hover:text-[var(--paper)]"
+                            >
+                              <span>{dish.name}</span>
+                              <X className="h-3.5 w-3.5 opacity-70" />
+                            </Badge>
+                          </button>
+                        </motion.li>
+                      ))}
+                    </AnimatePresence>
+                  </ul>
+                </LayoutGroup>
+              </ScrollArea>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </aside>
   )

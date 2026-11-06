@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { cn } from '@/lib/utils'
 
 type Props = {
   src: string
@@ -13,10 +14,15 @@ export function DishImage({ src, alt, className = '' }: Props) {
   if (failed) {
     return (
       <div
-        className={`flex items-center justify-center bg-[var(--surface-muted)] text-[var(--ink-muted)] ${className}`}
+        className={cn(
+          'flex items-center justify-center bg-[var(--surface-muted)] text-[var(--ink-muted)]',
+          className,
+        )}
         aria-label={alt}
       >
-        <span className="font-display text-2xl tracking-widest opacity-50">菜</span>
+        <span className="font-display text-2xl tracking-widest opacity-50">
+          菜
+        </span>
       </div>
     )
   }

@@ -1,5 +1,6 @@
-import type { Category } from '../data/dishes'
-import { categories } from '../data/dishes'
+import type { Category } from '@/data/dishes'
+import { categories } from '@/data/dishes'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 type Filter = '全部' | Category
 
@@ -10,32 +11,27 @@ type Props = {
 
 export function CategoryFilter({ value, onChange }: Props) {
   return (
-    <div
-      className="flex flex-wrap gap-2 sm:gap-3"
-      role="tablist"
+    <ToggleGroup
+      type="single"
+      value={value}
+      onValueChange={(next) => {
+        if (next) onChange(next as Filter)
+      }}
+      variant="outline"
+      size="sm"
       aria-label="按分类筛选"
+      className="justify-start"
     >
-      {categories.map((cat) => {
-        const active = value === cat
-        return (
-          <button
-            key={cat}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            onClick={() => onChange(cat)}
-            className={[
-              'px-3.5 py-1.5 text-sm tracking-wide transition-colors duration-200',
-              'border-b-2 rounded-none',
-              active
-                ? 'border-[var(--accent)] text-[var(--ink)] font-medium'
-                : 'border-transparent text-[var(--ink-muted)] hover:text-[var(--ink)]',
-            ].join(' ')}
-          >
-            {cat}
-          </button>
-        )
-      })}
-    </div>
+      {categories.map((cat) => (
+        <ToggleGroupItem
+          key={cat}
+          value={cat}
+          aria-label={cat}
+          className="min-w-14 tracking-wide"
+        >
+          {cat}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   )
 }
